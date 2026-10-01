@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemLab 9 • Светлая Лаборатория</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Сетка на фоне для "научного" вида -->
+    <div class="bg-grid"></div>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">🧪</div>
+            <div class="header-title">
+                <h1 id="headerLabTitle">№1 Лабораторный опыт</h1>
+                <p id="headerLabGoal">Цель обучения: 9.4.1.5 - Различать кислотность и щелочность раствора</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openLabModal()">🔄 Сменить опыт</button>
+            <button class="btn btn-primary" onclick="openReportModal()">📋 Таблица отчета</button>
+        </div>
+    </header>
+
+    <!-- Модальное окно выбора -->
+    <div class="modal-overlay" id="selectionModal">
+        <div class="modal-card">
+            <div class="lab-badge">ХИМИЯ 9 КЛАСС</div>
+            <h2 class="modal-title">Виртуальная лаборатория</h2>
+            <p class="modal-subtitle">Выберите нужную практическую работу для выполнения:</p>
+            
+            <div class="labs-grid">
+                <div class="lab-option-card" onclick="selectLab(1)">
+                    <span class="lab-badge">9.4.1.5</span>
+                    <h3>№1 Определение pH</h3>
+                    <p>Исследование растворов кислот и щелочей с помощью индикаторов.</p>
+                </div>
+                <div class="lab-option-card" onclick="selectLab(2)">
+                    <span class="lab-badge">9.3.4.3</span>
+                    <h3>№2 Гидролиз солей</h3>
+                    <p>Определение среды растворов средних солей на практике.</p>
+                </div>
+                <div class="lab-option-card" onclick="selectLab(3)">
+                    <span class="lab-badge">9.4.1.8</span>
+                    <h3>№3 Окрашивание пламени</h3>
+                    <p>Качественные реакции на катионы металлов (Li⁺, Na⁺, K⁺ и др.).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно отчета -->
+    <div class="modal-overlay hidden" id="reportModal">
+        <div class="modal-card" style="max-width: 900px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 20px; font-weight: 700;">📊 Отчет о работах</h2>
+                <button class="btn btn-secondary" onclick="closeReportModal()">✕ Закрыть</button>
+            </div>
+            <div id="reportContent" class="report-container">
+                <p style="color: #64748B;">Результаты еще не сохранены. Проведите опыт.</p>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <div class="lab-workspace">
+            <!-- Левая панель -->
+            <div class="controls-panel">
+                <div id="controlsLab1" class="panel-card">
+                    <div class="panel-title">🔬 1. Режим работы</div>
+                    <div class="horizontal-group" style="grid-template-columns: 1fr 1fr; margin-bottom: 16px;">
+                        <button class="btn-tab active" id="lab1Sub1" onclick="switchLab1Mode(1)">Опыт 1<br><small>Универсальный</small></button>
+                        <button class="btn-tab" id="lab1Sub2" onclick="switchLab1Mode(2)">Опыт 2<br><small>3 Индикатора</small></button>
+                    </div>
+
+                    <div class="panel-title">🧪 2. Выбор раствора</div>
+                    <div class="option-buttons" id="lab1Solutions"></div>
+
+                    <div id="indicatorSelectGroup" style="margin-top: 16px; display: none;">
+                        <div class="panel-title">💧 3. Индикатор</div>
+                        <div class="horizontal-group">
+                            <button class="btn-tab active" id="indLitmus" onclick="setIndicator('litmus')">Лакмус</button>
+                            <button class="btn-tab" id="indOrange" onclick="setIndicator('orange')">Метилоранж</button>
+                            <button class="btn-tab" id="indPhenol" onclick="setIndicator('phenol')">Фенолфталеин</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-action" onclick="runExperiment()">✨ Начать реакцию</button>
+                </div>
+
+                <div id="controlsLab2" class="panel-card" style="display: none;">
+                    <div class="panel-title">🧪 Выбор соли</div>
+                    <div class="option-buttons">
+                        <button class="select-btn active" onclick="selectLab2Salt('NaOH', this)"><span>Гидроксид натрия (NaOH)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectLab2Salt('Na2CO3', this)"><span>Карбонат натрия (Na₂CO₃)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectLab2Salt('BaCl2', this)"><span>Хлорид бария (BaCl₂)</span><div class="radio-dot"></div></button>
+                    </div>
+                    <button class="btn btn-action" onclick="runLab2Experiment()">🧪 Определить среду</button>
+                </div>
+
+                <div id="controlsLab3" class="panel-card" style="display: none;">
+                    <div class="panel-title">🔥 Выбор катиона металла</div>
+                    <div class="option-buttons">
+                        <button class="select-btn active" onclick="selectCation('Li+', this)"><span>Ион лития (Li⁺)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectCation('Na+', this)"><span>Ион натрия (Na⁺)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectCation('K+', this)"><span>Ион калия (K⁺)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectCation('Ca2+', this)"><span>Ион кальция (Ca²⁺)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectCation('Sr2+', this)"><span>Ион стронция (Sr²⁺)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectCation('Ba2+', this)"><span>Ион бария (Ba²⁺)</span><div class="radio-dot"></div></button>
+                        <button class="select-btn" onclick="selectCation('Cu2+', this)"><span>Ион меди (Cu²⁺)</span><div class="radio-dot"></div></button>
+                    </div>
+                    <button class="btn btn-action" onclick="runFlameTest()">🔥 Внести в пламя</button>
+                </div>
+            </div>
+
+            <!-- Зона визуала -->
+            <div class="simulation-stage">
+                <div class="status-banner">
+                    <span id="statusText">Ожидание действий пользователя...</span>
+                    <span class="status-tag" id="statusBadge">Готово</span>
+                </div>
+
+                <div class="lab-viewport" id="labViewport">
+                    <!-- Рендерится JS -->
+                </div>
+
+                <div class="result-box">
+                    <div class="result-info">
+                        <h4 id="resultTitle">Результат: Ожидание</h4>
+                        <p id="resultSub">Запустите опыт для получения данных</p>
+                    </div>
+                    <button class="btn btn-save" onclick="saveToReport()">📥 Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
+annotated-types==0.8.0
+anyio==4.15.0
+blinker==1.9.0
+certifi==2026.7.22
+cffi==2.1.1
+charset-normalizer==3.5.1
+click==8.5.0
+colorama==0.4.6
+cryptography==50.0.1
+distro==1.9.0
+exceptiongroup==1.3.1
+Flask==3.1.3
+flask-cors==6.0.5
+google-ai-generativelanguage==0.6.15
+google-api-core==2.33.0
+google-api-python-client==2.200.0
+google-auth==2.57.1
+google-auth-httplib2==0.4.2
+google-genai==2.22.0
+google-generativeai==0.8.6
+googleapis-common-protos==1.75.0
+grpcio==1.83.1
+grpcio-status==1.71.2
+h11==0.16.0
+httpcore==1.0.9
+httpcore2==2.12.0
+httplib2==0.32.0
+httpx==0.28.1
+httpx2==2.12.0
+idna==3.19
+itsdangerous==2.2.0
+Jinja2==3.1.6
+jiter==0.16.0
+MarkupSafe==3.0.3
+openai==3.8.0
+proto-plus==1.28.2
+protobuf==5.29.6
+pyasn1==0.6.4
+pyasn1_modules==0.4.2
+pycparser==3.0
+pydantic==2.13.5
+pydantic_core==2.46.5
+pygame==2.6.1
+pyparsing==3.3.2
+python-dotenv==1.2.3
+requests==2.34.2
+sniffio==1.3.1
+tenacity==9.1.4
+tqdm==4.70.0
+truststore==0.10.4
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+uritemplate==4.2.0
+urllib3==2.7.0
+websockets==16.1.1
+Werkzeug==3.1.8
+
+let currentLab = 1;
+let lab1SubMode = 1; 
+let selectedSolution = 'NaOH';
+let selectedIndicator = 'litmus';
+let selectedLab2Salt = 'NaOH';
+let selectedCation = 'Li+';
+let lastResult = null;
+let savedReports = [];
+
+const lab1DataMode1 = {
+    'NaOH': { name: 'Гидроксид натрия (NaOH)', color: '#3B82F6', ph: '12-14', type: 'щелочная', paperColor: '#1D4ED8' },
+    'HCl': { name: 'Соляная кислота (HCl)', color: '#EF4444', ph: '1-2', type: 'кислотная', paperColor: '#DC2626' },
+    'NaHCO3': { name: 'Питьевая сода (NaHCO₃)', color: '#0EA5E9', ph: '10-11', type: 'щелочная', paperColor: '#0284C7' },
+    'Lemon': { name: 'Лимонный сок', color: '#F97316', ph: '3-4', type: 'кислотная', paperColor: '#EA580C' },
+    'Water': { name: 'Вода (H₂O)', color: '#FBBF24', ph: '7', type: 'нейтральная', paperColor: '#D97706' }
+};
+
+const lab1DataMode2 = {
+    'H2SO4': {
+        name: 'Серная кислота (H₂SO₄)',
+        litmus: { color: 'rgba(239, 68, 68, 0.8)', text: 'Красный', glow: 'rgba(239, 68, 68, 0.4)' },
+        orange: { color: 'rgba(244, 63, 94, 0.8)', text: 'Розово-красный', glow: 'rgba(244, 63, 94, 0.4)' },
+        phenol: { color: 'rgba(248, 250, 252, 0.5)', text: 'Бесцветный', glow: 'transparent' }
+    },
+    'KOH': {
+        name: 'Гидроксид калия (KOH)',
+        litmus: { color: 'rgba(59, 130, 246, 0.8)', text: 'Синий', glow: 'rgba(59, 130, 246, 0.4)' },
+        orange: { color: 'rgba(234, 179, 8, 0.8)', text: 'Желтый', glow: 'rgba(234, 179, 8, 0.4)' },
+        phenol: { color: 'rgba(236, 72, 153, 0.8)', text: 'Малиновый', glow: 'rgba(236, 72, 153, 0.4)' }
+    },
+    'CH3COONa': {
+        name: 'Мыльный раствор',
+        litmus: { color: 'rgba(96, 165, 250, 0.7)', text: 'Слабо-синий', glow: 'rgba(96, 165, 250, 0.4)' },
+        orange: { color: 'rgba(250, 204, 21, 0.7)', text: 'Желтый', glow: 'rgba(250, 204, 21, 0.3)' },
+        phenol: { color: 'rgba(244, 114, 182, 0.7)', text: 'Слабо-малиновый', glow: 'rgba(244, 114, 182, 0.3)' }
+    }
+};
+
+const lab2Data = {
+    'NaOH': { name: 'Гидроксид натрия', color: 'rgba(59, 130, 246, 0.8)', glow: 'rgba(59, 130, 246, 0.4)', ph: '13-14', medium: 'Щелочная', eq: 'Не гидролизуется' },
+    'Na2CO3': { name: 'Карбонат натрия', color: 'rgba(14, 165, 233, 0.8)', glow: 'rgba(14, 165, 233, 0.4)', ph: '10-11', medium: 'Щелочная', eq: 'Na₂CO₃ + H₂O ⇌ NaHCO₃ + NaOH' },
+    'BaCl2': { name: 'Хлорид бария', color: 'rgba(250, 204, 21, 0.6)', glow: 'rgba(250, 204, 21, 0.2)', ph: '7', medium: 'Нейтральная', eq: 'Не гидролизуется' }
+};
+
+const flameData = {
+    'Li+': { name: 'Литий (Li⁺)', color: '#E60049', flameText: 'Карминно-красный' },
+    'Na+': { name: 'Натрий (Na⁺)', color: '#FFB703', flameText: 'Желтый' },
+    'K+': { name: 'Калий (K⁺)', color: '#9D4EDD', flameText: 'Фиолетовый' },
+    'Ca2+': { name: 'Кальций (Ca²⁺)', color: '#D90429', flameText: 'Кирпично-красный' },
+    'Sr2+': { name: 'Стронций (Sr²⁺)', color: '#EF233C', flameText: 'Красный' },
+    'Ba2+': { name: 'Барий (Ba²⁺)', color: '#8AC926', flameText: 'Желто-зеленый' },
+    'Cu2+': { name: 'Медь (Cu²⁺)', color: '#00A896', flameText: 'Сине-зеленый' }
+};
+
+window.onload = () => selectLab(1);
+
+function openLabModal() { document.getElementById('selectionModal').classList.remove('hidden'); }
+function closeLabModal() { document.getElementById('selectionModal').classList.add('hidden'); }
+function openReportModal() { renderReportTable(); document.getElementById('reportModal').classList.remove('hidden'); }
+function closeReportModal() { document.getElementById('reportModal').classList.add('hidden'); }
+
+function selectLab(labNum) {
+    currentLab = labNum;
+    closeLabModal();
+    document.getElementById('controlsLab1').style.display = labNum === 1 ? 'block' : 'none';
+    document.getElementById('controlsLab2').style.display = labNum === 2 ? 'block' : 'none';
+    document.getElementById('controlsLab3').style.display = labNum === 3 ? 'block' : 'none';
+
+    if (labNum === 1) {
+        document.getElementById('headerLabTitle').innerText = '№1 Определение pH';
+        switchLab1Mode(1);
+    } else if (labNum === 2) {
+        document.getElementById('headerLabTitle').innerText = '№2 Гидролиз солей';
+        renderLab2Stage();
+    } else if (labNum === 3) {
+        document.getElementById('headerLabTitle').innerText = '№3 Окрашивание пламени';
+        renderLab3Stage();
+    }
+}
+
+function switchLab1Mode(mode) {
+    lab1SubMode = mode;
+    const indGroup = document.getElementById('indicatorSelectGroup');
+    const container = document.getElementById('lab1Solutions');
+    
+    document.getElementById('lab1Sub1').classList.toggle('active', mode === 1);
+    document.getElementById('lab1Sub2').classList.toggle('active', mode === 2);
+
+    if (mode === 1) {
+        indGroup.style.display = 'none';
+        selectedSolution = 'NaOH';
+        container.innerHTML = `
+            <button class="select-btn active" onclick="setSolution('NaOH', this)"><span>Гидроксид натрия</span><div class="radio-dot"></div></button>
+            <button class="select-btn" onclick="setSolution('HCl', this)"><span>Соляная кислота</span><div class="radio-dot"></div></button>
+            <button class="select-btn" onclick="setSolution('NaHCO3', this)"><span>Питьевая сода</span><div class="radio-dot"></div></button>
+            <button class="select-btn" onclick="setSolution('Lemon', this)"><span>Лимонный сок</span><div class="radio-dot"></div></button>
+            <button class="select-btn" onclick="setSolution('Water', this)"><span>Дистиллированная вода</span><div class="radio-dot"></div></button>
+        `;
+    } else {
+        indGroup.style.display = 'block';
+        selectedSolution = 'H2SO4';
+        container.innerHTML = `
+            <button class="select-btn active" onclick="setSolution('H2SO4', this)"><span>Серная кислота</span><div class="radio-dot"></div></button>
+            <button class="select-btn" onclick="setSolution('KOH', this)"><span>Гидроксид калия</span><div class="radio-dot"></div></button>
+            <button class="select-btn" onclick="setSolution('CH3COONa', this)"><span>Мыльный раствор</span><div class="radio-dot"></div></button>
+        `;
+    }
+    renderLab1Stage();
+}
+
+function setSolution(solKey, btnElem) {
+    selectedSolution = solKey;
+    document.querySelectorAll('#lab1Solutions .select-btn').forEach(b => b.classList.remove('active'));
+    btnElem.classList.add('active');
+    renderLab1Stage();
+}
+
+function setIndicator(ind) {
+    selectedIndicator = ind;
+    document.getElementById('indLitmus').classList.toggle('active', ind === 'litmus');
+    document.getElementById('indOrange').classList.toggle('active', ind === 'orange');
+    document.getElementById('indPhenol').classList.toggle('active', ind === 'phenol');
+}
+
+function renderLab1Stage() {
+    const viewport = document.getElementById('labViewport');
+    if (lab1SubMode === 1) {
+        viewport.innerHTML = `
+            <div class="beaker-wrapper">
+                <div class="indicator-paper" id="paperStrip"></div>
+                <div class="test-tube"><div class="liquid" id="liquidBg"></div></div>
+            </div>
+        `;
+    } else {
+        viewport.innerHTML = `
+            <div class="beaker-wrapper">
+                <div class="pipette"><div class="pipette-drop" id="pipetteDrop"></div></div>
+                <div class="test-tube" style="margin-top: 40px;"><div class="liquid" id="liquidBg"></div></div>
+            </div>
+        `;
+    }
+    resetResultDisplay();
+}
+
+function runExperiment() {
+    if (lab1SubMode === 1) {
+        const data = lab1DataMode1[selectedSolution];
+        const paper = document.getElementById('paperStrip');
+        paper.classList.add('dipped');
+        
+        // Увеличено время для синхронизации с плавной CSS анимацией
+        setTimeout(() => {
+            paper.style.background = data.paperColor;
+            document.getElementById('resultTitle').innerText = `Результат: ${data.name}`;
+            document.getElementById('resultSub').innerText = `pH: ${data.ph} | Среда: ${data.type}`;
+            
+            lastResult = { lab: '№1 (pH)', solution: data.name, color: 'Изменился', ph: data.ph, medium: data.type };
+        }, 1000); 
+    } else {
+        const data = lab1DataMode2[selectedSolution];
+        const indInfo = data[selectedIndicator];
+        const drop = document.getElementById('pipetteDrop');
+        const liquid = document.getElementById('liquidBg');
+        
+        drop.style.background = indInfo.color.replace(/0\.[0-9]+\)/, '1)');
+        drop.classList.remove('animating');
+        void drop.offsetWidth; // Рестарт анимации
+        drop.classList.add('animating');
+
+        setTimeout(() => {
+            liquid.style.background = indInfo.color;
+            liquid.style.boxShadow = `0 0 20px ${indInfo.glow}`;
+            
+            document.getElementById('resultTitle').innerText = `Результат: ${data.name}`;
+            document.getElementById('resultSub').innerText = `Цвет: ${indInfo.text}`;
+
+            lastResult = { lab: '№1 (Индикаторы)', solution: data.name, indicator: selectedIndicator, color: indInfo.text, medium: 'Определена' };
+        }, 900); // Синхронно с падением капли
+    }
+}
+
+function selectLab2Salt(saltKey, btn) {
+    selectedLab2Salt = saltKey;
+    document.querySelectorAll('#controlsLab2 .select-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLab2Stage();
+}
+
+function renderLab2Stage() {
+    document.getElementById('labViewport').innerHTML = `
+        <div class="beaker-wrapper">
+            <div class="indicator-paper" id="paperStrip2"></div>
+            <div class="test-tube"><div class="liquid" id="liquidBg2"></div></div>
+        </div>
+    `;
+    resetResultDisplay();
+}
+
+function runLab2Experiment() {
+    const data = lab2Data[selectedLab2Salt];
+    const paper = document.getElementById('paperStrip2');
+    const liquid = document.getElementById('liquidBg2');
+    paper.classList.add('dipped');
+
+    setTimeout(() => {
+        paper.style.background = data.color.replace(/0\.[0-9]+\)/, '1)');
+        liquid.style.background = data.color;
+        liquid.style.boxShadow = `0 0 20px ${data.glow}`;
+        
+        document.getElementById('resultTitle').innerText = `Результат: ${data.name}`;
+        document.getElementById('resultSub').innerText = `Среда: ${data.medium} | ${data.eq}`;
+
+        lastResult = { lab: '№2 (Гидролиз)', solution: data.name, ph: data.ph, medium: data.medium, eq: data.eq };
+    }, 1000);
+}
+
+function selectCation(cationKey, btn) {
+    selectedCation = cationKey;
+    document.querySelectorAll('#controlsLab3 .select-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLab3Stage();
+}
+
+function renderLab3Stage() {
+    document.getElementById('labViewport').innerHTML = `
+        <div class="burner-wrapper">
+            <div class="wire-tool" id="wireTool"><div class="wire-tip" id="wireTip"></div></div>
+            <div class="flame-container"><div class="flame" id="flameElem"></div></div>
+            <div class="burner-base"></div>
+        </div>
+    `;
+    resetResultDisplay();
+}
+
+function runFlameTest() {
+    const data = flameData[selectedCation];
+    const wire = document.getElementById('wireTool');
+    const flame = document.getElementById('flameElem');
+    
+    document.getElementById('wireTip').style.background = data.color;
+    wire.classList.add('in-flame');
+
+    setTimeout(() => {
+        flame.style.background = `radial-gradient(circle at 50% 80%, #60A5FA, ${data.color} 50%, transparent 80%)`;
+        flame.style.boxShadow = `0 0 45px ${data.color}`;
+
+        document.getElementById('resultTitle').innerText = `Результат: ${data.name}`;
+        document.getElementById('resultSub').innerText = `Пламя: ${data.flameText}`;
+
+        lastResult = { lab: '№3 (Катионы)', cation: data.name, flameColor: data.flameText };
+    }, 900); // Синхронно с поворотом палочки
+}
+
+function resetResultDisplay() {
+    document.getElementById('resultTitle').innerText = 'Результат: Ожидание';
+    document.getElementById('resultSub').innerText = 'Запустите опыт для получения данных';
+    lastResult = null;
+}
+
+function saveToReport() {
+    if (!lastResult) return alert('Сначала выполните опыт!');
+    savedReports.push(lastResult);
+    alert('✅ Сохранено в таблицу отчета!');
+}
+
+function renderReportTable() {
+    const container = document.getElementById('reportContent');
+    if (savedReports.length === 0) return container.innerHTML = `<p style="color: #64748B;">Отчет пока пуст.</p>`;
+
+    let html = `<table class="report-table"><thead><tr><th>№</th><th>Лабораторная</th><th>Вещество</th><th>pH / Цвет</th><th>Среда / Инфо</th></tr></thead><tbody>`;
+    savedReports.forEach((item, i) => {
+        html += `<tr><td>${i + 1}</td><td>${item.lab}</td><td>${item.solution || item.cation}</td><td>${item.ph || item.flameColor || item.color}</td><td>${item.medium || ''} ${item.eq ? '(' + item.eq + ')' : ''}</td></tr>`;
+    });
+    container.innerHTML = html + `</tbody></table>`;
+}
+:root {
+    --primary: #06B6D4; /* Яркий циан (лабораторный цвет) */
+    --primary-hover: #0891B2;
+    --accent: #10B981; /* Изумрудный для успеха */
+    --bg-main: #F0F9FF; /* Светло-голубой фон */
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --glass-border: rgba(255, 255, 255, 0.6);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+    min-height: 100vh;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Сетка на фоне для "научности" */
+.bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    z-index: -1;
+}
+
+/* Шапка */
+header {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.logo-area { display: flex; align-items: center; gap: 12px; }
+
+.logo-icon {
+    font-size: 24px;
+    background: linear-gradient(135deg, #06B6D4, #3B82F6);
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
+    color: white;
+}
+
+.header-title h1 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.header-title p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* Кнопки */
+.btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #06B6D4, #0284C7);
+    color: white;
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
+}
+
+.btn-secondary {
+    background: white;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+}
+
+.btn-secondary:hover {
+    background: #F8FAFC;
+    transform: translateY(-2px);
+}
+
+.btn-action {
+    width: 100%;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #8B5CF6, #6366F1);
+    color: white;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.btn-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.btn-save:hover { transform: scale(1.05); }
+
+/* Модальные окна */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.4s ease, visibility 0.4s;
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid white;
+    border-radius: 24px;
+    padding: 36px;
+    max-width: 850px;
+    width: 90%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    transform: translateY(0) scale(1);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.hidden .modal-card {
+    transform: translateY(20px) scale(0.95);
+}
+
+.modal-title {
+    font-size: 26px;
+    margin-bottom: 8px;
+    color: #0F172A;
+}
+
+.modal-subtitle { color: #64748B; margin-bottom: 28px; }
+
+.labs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.lab-option-card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lab-option-card:hover {
+    transform: translateY(-8px);
+    border-color: #06B6D4;
+    box-shadow: 0 15px 30px rgba(6, 182, 212, 0.15);
+}
+
+.lab-badge {
+    background: #E0F2FE;
+    color: #0284C7;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+/* Рабочая зона */
+main {
+    flex: 1;
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.lab-workspace {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 30px;
+}
+
+/* Панель управления (Стеклянная карточка) */
+.panel-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--glass-border);
+}
+
+.panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+}
+
+.option-buttons { display: flex; flex-direction: column; gap: 10px; }
+
+.select-btn {
+    background: white;
+    border: 1px solid #E2E8F0;
+    padding: 14px 16px;
+    border-radius: 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.select-btn:hover { background: #F8FAFC; transform: translateX(4px); }
+
+.select-btn.active {
+    background: #ECFEFF;
+    border-color: #06B6D4;
+    color: #0891B2;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
+}
+
+.radio-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #CBD5E1;
+    transition: all 0.3s;
+}
+
+.select-btn.active .radio-dot {
+    border-width: 5px;
+    border-color: #06B6D4;
+}
+
+.horizontal-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+.btn-tab {
+    background: white;
+    border: 1px solid #E2E8F0;
+    padding: 12px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #64748B;
+    transition: all 0.3s;
+}
+
+.btn-tab.active {
+    background: #06B6D4;
+    color: white;
+    border-color: #06B6D4;
+    box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3);
+}
+
+/* Сцена симуляции */
+.simulation-stage {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--glass-border);
+    min-height: 580px;
+}
+
+.status-banner {
+    background: white;
+    border: 1px solid #E2E8F0;
+    padding: 14px 20px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.status-tag {
+    background: #ECFEFF;
+    color: #0891B2;
+    padding: 6px 14px;
+    border-radius: 10px;
+}
+
+/* Пробирки и анимации - Реалистичное стекло */
+.lab-viewport {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.beaker-wrapper {
+    position: relative;
+    width: 140px;
+    height: 280px;
+    display: flex;
+    justify-content: center;
+}
+
+.test-tube {
+    width: 100px;
+    height: 260px;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    border-bottom-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+    /* Эффект прозрачного стекла */
+    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%);
+    backdrop-filter: blur(6px);
+    box-shadow: 
+        inset -5px -5px 15px rgba(0,0,0,0.03), 
+        inset 5px 5px 15px rgba(255,255,255,0.8), 
+        0 20px 40px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    z-index: 2;
+}
+
+/* Блик на стекле */
+.test-tube::before {
+    content: '';
+    position: absolute;
+    top: 10px; left: 10px;
+    width: 12px; height: 80%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.8), transparent);
+    border-radius: 10px;
+    z-index: 5;
+}
+
+.liquid {
+    width: 100%;
+    height: 65%;
+    background: rgba(226, 232, 240, 0.6);
+    /* ОЧЕНЬ плавная смена цвета жидкости */
+    transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 1.5s ease;
+    position: relative;
+    z-index: 1;
+}
+
+/* Бумажка индикатора */
+.indicator-paper {
+    width: 26px;
+    height: 140px;
+    background: #FDE047; /* Желтый */
+    position: absolute;
+    top: -80px;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    /* Плавное погружение */
+    transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+.indicator-paper.dipped { top: 70px; }
+
+/* Пипетка и капля */
+.pipette {
+    position: absolute;
+    top: -50px;
+    width: 18px;
+    height: 90px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #CBD5E1;
+    border-radius: 9px 9px 3px 3px;
+    z-index: 10;
+}
+.pipette-drop {
+    width: 12px;
+    height: 12px;
+    background: transparent;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -15px;
+    left: 1px;
+    opacity: 0;
+}
+.pipette-drop.animating {
+    animation: dropAnim 1s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+
+@keyframes dropAnim {
+    0% { transform: scale(0.5) translateY(0); opacity: 1; }
+    50% { transform: scale(1.1) translateY(70px); opacity: 1; }
+    100% { transform: scale(0) translateY(150px); opacity: 0; }
+}
+
+/* Пламя */
+.burner-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.wire-tool {
+    width: 4px;
+    height: 200px;
+    background: #94A3B8;
+    position: absolute;
+    top: -100px;
+    transform: rotate(-30deg);
+    transform-origin: top center;
+    /* Плавное внесение в пламя */
+    transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10;
+}
+.wire-tool.in-flame { transform: rotate(0deg) translateY(50px); }
+.wire-tip {
+    width: 14px;
+    height: 14px;
+    background: #CBD5E1;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -5px;
+    left: -5px;
+    transition: background 1s ease;
+}
+.flame-container {
+    width: 70px;
+    height: 130px;
+    position: relative;
+    margin-top: 80px;
+}
+.flame {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 80%, #60A5FA, #3B82F6 40%, transparent 80%);
+    border-radius: 50% 50% 20% 20% / 80% 80% 30% 30%;
+    filter: blur(3px);
+    animation: burn 2s infinite ease-in-out alternate;
+    transition: background 1.2s ease, box-shadow 1.2s ease;
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+}
+@keyframes burn {
+    0% { transform: scale(0.95) rotate(-2deg); }
+    100% { transform: scale(1.05) rotate(2deg); }
+}
+.burner-base {
+    width: 90px;
+    height: 30px;
+    background: #CBD5E1;
+    border-radius: 8px 8px 0 0;
+    border-top: 4px solid #94A3B8;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Блок результатов */
+.result-box {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+}
+
+.result-info h4 { color: #0F172A; font-size: 16px; margin-bottom: 6px; }
+.result-info p { color: var(--primary-hover); font-size: 14px; font-weight: 500;}
+
+/* Таблица */
+.report-container {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #E2E8F0;
+}
+.report-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.report-table th, .report-table td {
+    border-bottom: 1px solid #E2E8F0;
+    padding: 12px 16px;
+    text-align: left;
+}
+.report-table th { background: #F8FAFC; color: #475569; font-weight: 600; }
+.report-table tr:hover { background: #F8FAFC; }
